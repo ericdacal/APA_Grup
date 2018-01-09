@@ -46,7 +46,7 @@ error_rate.test <- 100*(1-sum(diag(t2))/ntest)
 error_rate.test
 
 ex <- data.frame(size=integer(), decay=double(), error_training=double(), error_test=double(),stringsAsFactors=FALSE)
-sizes <- seq(1,10,by=2)+1
+sizes <- seq(1,30,by=2)+1
 decays <- 10^seq(-2,0,by=1)
 times <- 10
 
@@ -79,6 +79,7 @@ for (s in sizes) {
 }
 
 save(ex, file = "results_error_v2")
+load("results_error_v2")
 
 matplot(ex[ex$decay == 0.01,1], data.frame(ex[ex$decay == 1,4],ex[ex$decay == 0.1,4], ex[ex$decay == 0.01,4]), type = c("b"),pch=1,col = 1:3, xlab = "size", ylab = "error_rate") #plot
 legend("topright", legend = c("decay: 1","decay: 0.1","decay: 0.01" ), col=1:3, pch=1) # optional legend
