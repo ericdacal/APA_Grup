@@ -1,21 +1,32 @@
-
+rm(list = ls())
 library(MASS)
+library(doParallel)
+set.seed (23)
 
-##Leemos los datos de los ficheros
-training <- read.table("sat.trn", header = FALSE, sep = " ")
-test <- read.table("sat.tst", header = FALSE, sep = " ")
+source("functions.R", local = TRUE)
 
-# Generem el model
-lda.model <- lda (training$V37 ~ ., training)
-lda.model
+# Llegim les dades dels fitxers
+training <- readTraining()
+test <- readTest()
 
-training$V37 <- factor(training$V37)
-test$V37 <- factor(test$V37)
+load("lda.model")
+if (!exists("lda.model")) {
+  cl <- makeCluster(detectCores())
+  registerDoParallel(cl)
+  
+  # Generem el model
+  lda.model <- lda (training$V37 ~ ., training)
+  
+  stopCluster(cl)
+  save(lda.model, file = "lda.model")
+}
 
 # Visualitzacio de l'error de training
 pred.train = predict(lda.model)
-checkError(pred.train$class, training$V37, "training")
+print("Error de training: ")
+print(errorValue(training$V37, pred.train$class))
 
 # Visualitzacio de l'error de testing
 pred.valid = predict(lda.model, newdata = test)
-checkError(pred.valid$class, test$V37, "validacio")
+print("Error de test: ")
+print(errorValue(test$V37, pred.valid$class))

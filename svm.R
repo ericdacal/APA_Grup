@@ -1,29 +1,42 @@
+rm(list = ls())
 library(MASS)
 library(kernlab)
 library(caret)
 library(doParallel)
+set.seed (23)
 
+source("functions.R", local = TRUE)
 
-training <- read.table("sat.trn", header = FALSE, sep = " ")
-test <- read.table("sat.tst", header = FALSE, sep = " ")
+## Llegim les dades dels fitxers
+training <- readTraining()
+test <- readTest()
+load("svm.model")
 
-trc <- trainControl(method="cv", number = 4, repeats = 2)
+if (!exists("svm.model")) {
+  cl <- makeCluster(detectCores())
+  registerDoParallel(cl)
+  
+  #Els valors final per al nostre model són sigma = 0.1 i C = 15
+  svm.model <- train(V37 ~ ., data = training, method="svmRadial", maxit = 200,
+                     tuneGrid = expand.grid(C=c(15, 16, 17), sigma=c(0.01, 0.05, 0.1, 0.5)))
+  
+  stopCluster(cl)
+  save(svm.model, file = "svm.model")
+}
 
-training$V37 <- factor(training$V37)
-test$V37 <- factor(test$V37)
+svm.model$bestTune
 
-cl <- makeCluster(detectCores())
-registerDoParallel(cl)
+pred <- predict(svm.model)
+print("Error de training: ")
+print(errorValue(training$V37, pred))
 
-svm.model = train(V37 ~ ., data = training, method="svmRadial", maxit = 200, trControl = trc,
-                  tuneGrid = expand.grid(C=c(15, 16, 17), sigma=c(0.01, 0.05, 0.1)))
+pred <- predict(svm.model, newdata = test)
+print("Error de test: ")
+print(errorValue(test$V37, pred))
 
-stopCluster(cl)
-svm.pred <- predict(svm.model)
-table(training$V37, factor(svm.pred, levels = levels(training$V37)))
-
-svm.pred <- predict(svm.model, newdata = test)
-table(test$V37, factor(svm.pred, levels = levels(test$V37)))
-
-
-      
+matplot(svm.model$results[svm.model$results$sigma == 0.01,1], 
+        data.frame(svm.model$results[svm.model$results$sigma == 0.01,3],
+                   svm.model$results[svm.model$results$sigma == 0.05,3], 
+                   svm.model$results[svm.model$results$sigma == 0.1,3],
+                   svm.model$results[svm.model$results$sigma == 0.5,3]),type = c("b"),pch=1,col = 1:4, xlab = "C", ylab = "error_rate")
+legend("right", legend = c("sigma: 0.01","sigma: 0.05","sigma: 0.1", "sigma: 0.5" ), col=1:4, pch=1) # optional legend
