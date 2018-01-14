@@ -1,6 +1,5 @@
 rm(list = ls())
 library(MASS)
-library(doParallel)
 set.seed (23)
 
 source("functions.R", local = TRUE)
@@ -11,13 +10,10 @@ test <- readTest()
 
 load("qda.model")
 if (!exists("qda.model")) {
-  cl <- makeCluster(detectCores())
-  registerDoParallel(cl)
-  
-  # Generem el model
+
+    # Generem el model
   qda.model <- qda (training$V37 ~ ., training)
   
-  stopCluster(cl)
   save(qda.model, file = "qda.model")
 }
 

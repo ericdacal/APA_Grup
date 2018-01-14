@@ -1,6 +1,5 @@
 rm(list = ls())
 library(MASS)
-library(doParallel)
 set.seed (23)
 
 source("functions.R", local = TRUE)
@@ -11,13 +10,10 @@ test <- readTest()
 
 load("lda.model")
 if (!exists("lda.model")) {
-  cl <- makeCluster(detectCores())
-  registerDoParallel(cl)
-  
+
   # Generem el model
   lda.model <- lda (training$V37 ~ ., training)
   
-  stopCluster(cl)
   save(lda.model, file = "lda.model")
 }
 

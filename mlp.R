@@ -1,7 +1,6 @@
 rm(list = ls())
 library(MASS)
 library(nnet)
-library(doParallel)
 set.seed (23)
 
 source("functions.R", local = TRUE)
@@ -13,8 +12,6 @@ test <- readTest()
 load("nnet.model")
 
 if (!exists("ex")) {
-  cl <- makeCluster(detectCores())
-  registerDoParallel(cl)
   
   #Escalamos las variables para evitar 'stagnation' (premature convergence)
   for (v in 1:(length(training) - 1)) {
@@ -48,8 +45,6 @@ if (!exists("ex")) {
       ex[nrow(ex),4] <- ex[nrow(ex),4]/times
     }
   }
-  
-  stopCluster(cl)
   
   save(ex, file = "nnet.model")
 }

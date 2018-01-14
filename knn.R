@@ -1,7 +1,6 @@
 rm(list = ls())
 library(class)
 library(MASS)
-library(doParallel)
 set.seed (23)
 
 source("functions.R", local = TRUE)
@@ -18,9 +17,6 @@ if (!exists("errors")) {
   colnames(errors) <- c("k","error")
   ## Paral·lelitzem el for
   
-  cl <- makeCluster(detectCores())
-  registerDoParallel(cl)
-  
   for (k in neighbours) {
     myknn <- knn(training[1:36], test[1:36], training$V37, k = k, prob=TRUE)
     
@@ -28,8 +24,6 @@ if (!exists("errors")) {
     errors[k, "k"] <- neighbours[k]
     errors[k, "error"] <- errorValue(test$V37, myknn)
   }
-  
-  stopCluster(cl)
   
   save(errors, file = "knn.model")
 }

@@ -2,7 +2,6 @@ rm(list = ls())
 library(MASS)
 library(kernlab)
 library(caret)
-library(doParallel)
 set.seed (23)
 
 source("functions.R", local = TRUE)
@@ -13,14 +12,11 @@ test <- readTest()
 load("svm.model")
 
 if (!exists("svm.model")) {
-  cl <- makeCluster(detectCores())
-  registerDoParallel(cl)
   
   #Els valors final per al nostre model són sigma = 0.1 i C = 15
   svm.model <- train(V37 ~ ., data = training, method="svmRadial", maxit = 200,
                      tuneGrid = expand.grid(C=c(15, 16, 17), sigma=c(0.01, 0.05, 0.1, 0.5)))
   
-  stopCluster(cl)
   save(svm.model, file = "svm.model")
 }
 
